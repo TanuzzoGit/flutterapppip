@@ -68,9 +68,9 @@ class _MyHomePageState extends State<MyHomePage> {
             child: FloatingActionButton(
               tooltip: "Aggiunti Un Nuovo Ticket",
               onPressed: () {
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    listaKey.currentState?._getTickets();
-  });
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  listaKey.currentState?._getTickets();
+                });
               },
               backgroundColor: Theme.of(context).colorScheme.surface,
               elevation: 1,
@@ -131,6 +131,7 @@ class Lista extends StatefulWidget {
   @override
   State<Lista> createState() => _ListaState();
 }
+
 class _ListaState extends State<Lista> {
   List<Appunto>? _tickets;
   fetchAppunto fetcher = fetchAppunto();
@@ -153,49 +154,53 @@ class _ListaState extends State<Lista> {
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(8.0),
-      children: (_tickets ?? []).map((ticket) {
-        return Card(
-          margin: const EdgeInsets.symmetric(vertical: 8.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
-            side: BorderSide(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-              width: 1.0,
-            ),
-          ),
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildInfoRow(
-                  context,
-                  label: "Autore",
-                  value: ticket.nomeAutore ?? "Autore sconosciuto",
+      children:
+          (_tickets ?? []).map((ticket) {
+            return Card(
+              margin: const EdgeInsets.symmetric(vertical: 8.0),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10.0),
+                side: BorderSide(
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  width: 1.0,
                 ),
-                const SizedBox(height: 8),
-                _buildInfoRow(
-                  context,
-                  label: "Cliente",
-                  value: ticket.nomeCliente ?? "Cliente sconosciuto",
+              ),
+              elevation: 2,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoRow(
+                      context,
+                      label: "Autore",
+                      value: ticket.nomeAutore ?? "Autore sconosciuto",
+                    ),
+                    const SizedBox(height: 8),
+                    _buildInfoRow(
+                      context,
+                      label: "Cliente",
+                      value: ticket.nomeCliente ?? "Cliente sconosciuto",
+                    ),
+                    const SizedBox(height: 8),
+                    _buildInfoRow(
+                      context,
+                      label: "Contenuto",
+                      value: ticket.contenuto ?? "Niente da mostrare",
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
-                _buildInfoRow(
-                  context,
-                  label: "Contenuto",
-                  value: ticket.contenuto ?? "Niente da mostrare",
-                ),
-              ],
-            ),
-          ),
-        );
-      }).toList(),
+              ),
+            );
+          }).toList(),
     );
   }
 
-  Widget _buildInfoRow(BuildContext context,
-      {required String label, required String value}) {
+  Widget _buildInfoRow(
+    BuildContext context, {
+    required String label,
+    required String value,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -212,9 +217,7 @@ class _ListaState extends State<Lista> {
         Expanded(
           child: Text(
             value,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
           ),
         ),
       ],
