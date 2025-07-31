@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
 
@@ -27,7 +28,6 @@ class _MyHomePageState extends State<MyHomePage> {
                 color: Theme.of(context).colorScheme.primary,
                 width: 2,
               ),
-              
             ),
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             actions: [
@@ -96,13 +96,16 @@ class Appunto {
 class fetchAppunto {
   Future<List<Appunto>> getAppunti() async {
     final temp = await http.get(
-    Uri.parse("${dotenv.env['IP_ADDR']}:${dotenv.env['PORT']}/api/appunti")
+      // Uri.parse("${dotenv.env['IP_ADDR']}:${dotenv.env['PORT']}/api/appunti")
+      Uri.parse("http://192.168.1.96:3000/api/appunti"),
     );
+    print(temp.body);
+    print(temp);
     final List<Appunto> appunti =
         (json.decode(temp.body) as List)
             .map(
               (data) => Appunto(
-                id : data['_id'],
+                id: data['_id'],
                 nomeAutore: data['nomeAutore'],
                 nomeCliente: data['nomePersona'],
                 contenuto: data['contenuto'],
@@ -142,71 +145,137 @@ class _ListaState extends State<Lista> {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(8.0),
-      children:
-          (_tickets ?? []).map((ticket) {
-            return Card(
-              margin: const EdgeInsets.symmetric(vertical: 8.0),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-                side: BorderSide(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-                  width: 1.0,
+  return ListView(
+    padding: const EdgeInsets.all(8.0),
+    children: (_tickets ?? []).map((ticket) {
+      return InkWell(
+        onTap: () {
+          context.push('/ticket/${ticket.id}');
+        },
+        borderRadius: BorderRadius.circular(10.0),
+        child: Card(
+          margin: const EdgeInsets.symmetric(vertical: 8.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+            side: BorderSide(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              width: 1.0,
+            ),
+          ),
+          elevation: 2,
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Expanded(
+                  flex: 3,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildInfoRow(
+                        context,
+                        label: "Autore",
+                        value: ticket.nomeAutore ?? "Autore sconosciuto",
+                      ),
+                      const SizedBox(height: 8),
+                      _buildInfoRow(
+                        context,
+                        label: "Cliente",
+                        value: ticket.nomeCliente ?? "Cliente sconosciuto",
+                      ),
+                      const SizedBox(height: 8),
+                      _buildInfoRow(
+                        context,
+                        label: "Contenuto",
+                        value: ticket.contenuto ?? "Niente da mostrare",
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: 
-                Row( crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                mainAxisSize: MainAxisSize.max,
-                  children:[
-                    Expanded(
-                      flex: 3,
-                      child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildInfoRow(
-                      context,
-                      label: "Autore",
-                      value: ticket.nomeAutore ?? "Autore sconosciuto",
-                    ),
-                    const SizedBox(height: 8),
-                    _buildInfoRow(
-                      context,
-                      label: "Cliente",
-                      value: ticket.nomeCliente ?? "Cliente sconosciuto",
-                    ),
-                    const SizedBox(height: 8),
-                    _buildInfoRow(
-                      context,
-                      label: "Contenuto",
-                      value: ticket.contenuto ?? "Niente da mostrare",
-                    ),
-                    const SizedBox(height: 8),
-                    _buildInfoRow(
-                      context,
-                      label: "id",
-                      value: ticket.id ?? "Niente da mostrare",
-                    ),
-                  ],
-                ),),/* COLONNA CON LE INFORMAZIONI  */
+                /* COLONNA CON LE INFORMAZIONI  */
                 Column(
                   mainAxisSize: MainAxisSize.max,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                  Text("Ciao"),
-                  Text("Ciao"),
-                  Text("Ciao"),
-                ],)
-              
-              ])),
-            );
-          }).toList(),
-    );
-  }
+                    Text(
+                      ticket.statoPratica ?? "Stato sconosciuto",
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        // Questo impedisce che il tap si propaghi alla Card
+                      },
+                      child: Container(
+                        width: 18,
+                        height: 18,
+                        alignment: Alignment.center,
+                        child: IconButton(
+                          onPressed: () {
+                            // context.push('/ticket/${ticket.id}');
+                            http.delete(Uri.parse("${dotenv.env['IP_ADDR']}:3000/api/appunti/${ticket.id}"))
+                                .then((response) {
+                              if (response.statusCode == 200) {
+                                setState(() {
+                                  _tickets?.remove(ticket);
+                                });
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Ticket eliminato con successo!"),
+                                  ),
+                                );
+                              } else {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text("Errore durante l'eliminazione del ticket."),
+                                  ),
+                                );
+                              }
+                            });
+                          },
+                          style: IconButton.styleFrom(
+                            backgroundColor: Color.fromARGB(
+                              255,
+                              200,
+                              100,
+                              100,
+                            ),
+                            padding: EdgeInsets.zero, // Rimuovi il padding
+                            minimumSize: Size(
+                              18,
+                              18,
+                            ), // Imposta la dimensione minima
+                            fixedSize: Size(
+                              18,
+                              18,
+                            ), // Imposta la dimensione fissa
+                          ),
+                          constraints:
+                              BoxConstraints(), // Rimuovi i constraints predefiniti
+                          icon: const Icon(
+                            Icons.remove,
+                            color: Colors.white,
+                            size: 16, // Riduci la dimensione dell'icona
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }).toList(),
+  );
+}
+        
 
   Widget _buildInfoRow(
     BuildContext context, {

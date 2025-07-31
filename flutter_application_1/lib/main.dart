@@ -3,6 +3,7 @@ import 'package:flutter_application_1/homePage.dart';
 import 'package:flutter_application_1/insertNode.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'specific_ticket.dart';
 // GoRouter configuration
 final _router = GoRouter(
   routes: [
@@ -11,6 +12,10 @@ final _router = GoRouter(
       builder: (context, state) => MyHomePage(title:'Lista'),
     ),
     GoRoute(path: '/insert', builder: (context, state) => const InsertPage()),
+    GoRoute(path: '/ticket/:ticketId', builder: (context, state) {
+      final ticketId = state.pathParameters['ticketId']!;
+      return SpecificTicket(ticketId: ticketId);
+    }),
   ],
 );
 Future main() async {
