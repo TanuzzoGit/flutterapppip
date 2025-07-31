@@ -268,7 +268,7 @@ app.use((error, req, res, next) => {
 });
 
 // Avvia server
-app.listen(PORT,"192.168.1.96", () => {
+app.listen(3000,"0.0.0.0", () => {
   console.log(`Server in ascolto sulla porta ${PORT}`);
   console.log(`MongoDB connesso a: mongodb://localhost:27017/appunti_app`);
 });
