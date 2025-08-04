@@ -1,32 +1,56 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/homePage.dart';
 import 'package:flutter_application_1/insertNode.dart';
+import 'package:flutter_application_1/specific_ticket.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'specific_ticket.dart';
+
 // GoRouter configuration
 final _router = GoRouter(
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => MyHomePage(title:'Lista'),
+      builder: (context, state) => MyHomePage(title: 'Pizzini',key: UniqueKey(),),
     ),
-    GoRoute(path: '/insert', builder: (context, state) => const InsertPage()),
-    GoRoute(path: '/ticket/:ticketId', builder: (context, state) {
-      final ticketId = state.pathParameters['ticketId']!;
-      return SpecificTicket(ticketId: ticketId);
-    }),
+    GoRoute(
+      path: '/insert',
+      builder: (context, state) => const InsertPage(),
+    ),
+    GoRoute(
+      path: '/ticket/:ticketId',
+      builder: (context, state) {
+        final ticketId = state.pathParameters['ticketId']!;
+        return SpecificTicket(ticketId: ticketId);
+      },
+    ),
   ],
 );
-Future main() async {
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Carica env file
+
+  // Errori Flutter
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.dumpErrorToConsole(details);
+    print('FlutterError: ${details.exceptionAsString()}');
+  };
   await dotenv.load();
-  runApp(const MyApp());
+
+  // Cattura anche errori asincroni o esterni
+  runZonedGuarded(() {
+    runApp(const MyApp());
+  }, (error, stackTrace) {
+    print('Zoned Error: $error');
+    print('StackTrace: $stackTrace');
+  });
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-  
-  // This widget is the root of your application.
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
@@ -38,8 +62,6 @@ class MyApp extends StatelessWidget {
       ),
       routerConfig: _router,
       debugShowCheckedModeBanner: false,
-      
-
     );
   }
 }

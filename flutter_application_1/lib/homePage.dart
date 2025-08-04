@@ -6,7 +6,6 @@ import 'dart:convert';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
-
   final String title;
 
   @override
@@ -18,60 +17,34 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          appBar: AppBar(
-            title: Text(widget.title),
-            shape: Border(
-              bottom: BorderSide(
-                color: Theme.of(context).colorScheme.primary,
-                width: 2,
-              ),
-            ),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.add),
-                tooltip: 'Aggiungi Nuovo Ticket',
-                onPressed: () {
-                  context.go('/insert');
-                },
-              ),
-            ],
-          ),
-          body: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[Expanded(child: Lista(key: listaKey))],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+        shape: Border(
+          bottom: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 2,
           ),
         ),
-
-        // These widgets will appear above the AppBar and everything else
-        Positioned(
-          top: 20,
-          left: 0,
-          right: 0,
-          child: Center(
-            child: FloatingActionButton(
-              tooltip: "Aggiunti Un Nuovo Ticket",
-              onPressed: () {
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  listaKey.currentState?._getTickets();
-                });
-              },
-              backgroundColor: Theme.of(context).colorScheme.surface,
-              elevation: 1,
-              shape: CircleBorder(
-                side: BorderSide(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  width: 2,
-                ),
-              ),
-              child: const Icon(Icons.refresh, color: Colors.black),
-            ),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Ricarica Ticket',
+            onPressed: () {
+              listaKey.currentState?._getTickets();
+            },
           ),
-        ),
-      ],
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Aggiungi Nuovo Ticket',
+            onPressed: () {
+              context.go('/insert');
+            },
+          ),
+        ],
+      ),
+      body: Lista(key: listaKey),
     );
   }
 }
@@ -83,6 +56,8 @@ class Appunto {
   String? contenuto;
   DateTime? dataCreazione;
   String? statoPratica;
+  String? tipologia;
+
   Appunto({
     this.id,
     this.nomeAutore,
@@ -90,30 +65,33 @@ class Appunto {
     this.contenuto,
     this.statoPratica,
     this.dataCreazione,
+    this.tipologia,
   });
 }
 
 class fetchAppunto {
   Future<List<Appunto>> getAppunti() async {
-    final temp = await http.get(
-      // Uri.parse("${dotenv.env['IP_ADDR']}:${dotenv.env['PORT']}/api/appunti")
-      Uri.parse("http://192.168.1.96:3000/api/appunti"),
+    final response = await http.get(
+      Uri.parse("${dotenv.env['IP_ADDR']}/api/appunti"),
     );
-    print(temp.body);
-    print(temp);
+
+    if (response.statusCode != 200) {
+      throw Exception("Errore nel recupero dei ticket");
+    }
+
     final List<Appunto> appunti =
-        (json.decode(temp.body) as List)
-            .map(
-              (data) => Appunto(
-                id: data['_id'],
-                nomeAutore: data['nomeAutore'],
-                nomeCliente: data['nomePersona'],
-                contenuto: data['contenuto'],
-                statoPratica: data['statoPratica'],
-                dataCreazione: DateTime.parse(data['dataCreazione']),
-              ),
-            )
-            .toList();
+        (json.decode(response.body) as List).map((data) {
+          return Appunto(
+            id: data['_id'],
+            nomeAutore: data['nomeAutore'],
+            nomeCliente: data['nomePersona'],
+            contenuto: data['contenuto'],
+            statoPratica: data['statoPratica'],
+            dataCreazione: DateTime.parse(data['dataCreazione']),
+            tipologia: data['tipologia'],
+          );
+        }).toList();
+
     return appunti;
   }
 }
@@ -127,7 +105,7 @@ class Lista extends StatefulWidget {
 
 class _ListaState extends State<Lista> {
   List<Appunto>? _tickets;
-  fetchAppunto fetcher = fetchAppunto();
+  final fetchAppunto fetcher = fetchAppunto();
 
   @override
   void initState() {
@@ -136,146 +114,319 @@ class _ListaState extends State<Lista> {
   }
 
   void _getTickets() async {
-    print("Fetching tickets...");
     final result = await fetcher.getAppunti();
     setState(() {
       _tickets = result;
     });
   }
 
+  void FilterByName(String nomecliente) async {
+    final response = await http.get(
+      Uri.parse("${dotenv.env['IP_ADDR']}/api/appunti/client/$nomecliente"),
+    );
+    final List<Appunto> appunti =
+        (json.decode(response.body) as List).map((data) {
+          return Appunto(
+            id: data['_id'],
+            nomeAutore: data['nomeAutore'],
+            nomeCliente: data['nomePersona'],
+            contenuto: data['contenuto'],
+            statoPratica: data['statoPratica'],
+            dataCreazione: DateTime.parse(data['dataCreazione']),
+            tipologia: data['tipologia'],
+          );
+        }).toList();
+    setState(() {
+      _tickets = appunti;
+    });
+  }
+
+  bool _toggleSearch = false;
+  bool isFiltered = false;
   @override
   Widget build(BuildContext context) {
-  return ListView(
-    padding: const EdgeInsets.all(8.0),
-    children: (_tickets ?? []).map((ticket) {
-      return InkWell(
-        onTap: () {
-          context.push('/ticket/${ticket.id}');
-        },
-        borderRadius: BorderRadius.circular(10.0),
-        child: Card(
-          margin: const EdgeInsets.symmetric(vertical: 8.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
-            side: BorderSide(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
-              width: 1.0,
-            ),
-          ),
-          elevation: 2,
-          child: Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildInfoRow(
-                        context,
-                        label: "Autore",
-                        value: ticket.nomeAutore ?? "Autore sconosciuto",
-                      ),
-                      const SizedBox(height: 8),
-                      _buildInfoRow(
-                        context,
-                        label: "Cliente",
-                        value: ticket.nomeCliente ?? "Cliente sconosciuto",
-                      ),
-                      const SizedBox(height: 8),
-                      _buildInfoRow(
-                        context,
-                        label: "Contenuto",
-                        value: ticket.contenuto ?? "Niente da mostrare",
-                      ),
-                    ],
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: 
+              isFiltered ?
+                ElevatedButton(onPressed:() {setState(() {
+                  isFiltered = false;
+                  _getTickets();
+                });} , child: Icon(Icons.close, color: Colors.black), style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                  shape: CircleBorder(),
+                ))
+               : ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                  foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
+                  shape: CircleBorder(
+                    
                   ),
                 ),
-                /* COLONNA CON LE INFORMAZIONI  */
-                Column(
-                  mainAxisSize: MainAxisSize.max,
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      ticket.statoPratica ?? "Stato sconosciuto",
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.primary,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    GestureDetector(
-                      onTap: () {
-                        // Questo impedisce che il tap si propaghi alla Card
-                      },
-                      child: Container(
-                        width: 18,
-                        height: 18,
-                        alignment: Alignment.center,
-                        child: IconButton(
-                          onPressed: () {
-                            // context.push('/ticket/${ticket.id}');
-                            http.delete(Uri.parse("${dotenv.env['IP_ADDR']}:3000/api/appunti/${ticket.id}"))
-                                .then((response) {
-                              if (response.statusCode == 200) {
-                                setState(() {
-                                  _tickets?.remove(ticket);
-                                });
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("Ticket eliminato con successo!"),
-                                  ),
-                                );
-                              } else {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text("Errore durante l'eliminazione del ticket."),
-                                  ),
-                                );
-                              }
-                            });
-                          },
-                          style: IconButton.styleFrom(
-                            backgroundColor: Color.fromARGB(
-                              255,
-                              200,
-                              100,
-                              100,
+                onPressed: () {
+                  setState(() {
+                    _toggleSearch = !_toggleSearch;
+                  });
+                  print(_toggleSearch);
+                },
+                child: Icon(Icons.search, color: Colors.black),
+              ),
+            ),
+            Expanded(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 800),
+                curve: Curves.easeOutCubic,
+                width: _toggleSearch ? MediaQuery.sizeOf(context).width  : 0,
+                child: AnimatedOpacity(
+                  duration: const Duration(milliseconds: 300),
+                  opacity: _toggleSearch ? 1.0 : 0.0,
+                  child:
+                      _toggleSearch
+                          ? Padding(
+                            padding: const EdgeInsets.only(
+                              left: 8,
+                              right: 12,
+                              top: 8,
+                              bottom: 8,
                             ),
-                            padding: EdgeInsets.zero, // Rimuovi il padding
-                            minimumSize: Size(
-                              18,
-                              18,
-                            ), // Imposta la dimensione minima
-                            fixedSize: Size(
-                              18,
-                              18,
-                            ), // Imposta la dimensione fissa
-                          ),
-                          constraints:
-                              BoxConstraints(), // Rimuovi i constraints predefiniti
-                          icon: const Icon(
-                            Icons.remove,
-                            color: Colors.white,
-                            size: 16, // Riduci la dimensione dell'icona
+                            child: TextField(
+                              onSubmitted: (value) {
+                                FilterByName(value);
+                                setState(() {
+                                  isFiltered = true;
+                                });
+                              },
+                              decoration: InputDecoration(
+                                hintText: "Cerca per Nome Cliente",
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                              ),
+                            ),
+                          )
+                          : const SizedBox.shrink(),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                        isFiltered = true;
+
+                      _tickets?.sort((a, b) {
+                        int getPriority(String? stato) {
+                          switch (stato) {
+                            case "Prendere in Carico":
+                              return 0;
+                            case "Attende Risposta":
+                              return 1;
+                            case "Chiuso":
+                              return 99;
+                            default:
+                              return 2;
+                          }
+                        }
+                        return getPriority(
+                          a.statoPratica,
+                        ).compareTo(getPriority(b.statoPratica));
+                      });
+                    });
+                  },
+                  icon: const Icon(Icons.sort, color: Colors.black),
+                  label: MediaQuery.sizeOf(context).width < 300 ? const Text("Ordina per Priorità") : Text(""),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor:
+                        Theme.of(context).colorScheme.primaryContainer,
+                    foregroundColor:
+                        Theme.of(context).colorScheme.onPrimaryContainer,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 10,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.all(8.0),
+            children:
+                (_tickets ?? []).map((ticket) {
+                  return InkWell(
+                    onTap: () => context.push('/ticket/${ticket.id}'),
+                    borderRadius: BorderRadius.circular(10.0),
+                    child: Card(
+                      margin: const EdgeInsets.symmetric(vertical: 8.0),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10.0),
+                        side: BorderSide(
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.3),
+                          width: 1.0,
+                        ),
+                      ),
+                      elevation: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: IntrinsicHeight(
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                flex: 3,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    _buildInfoRow(
+                                      context,
+                                      label: "Autore",
+                                      value: ticket.nomeAutore ?? "Sconosciuto",
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _buildInfoRow(
+                                      context,
+                                      label: "Cliente",
+                                      value:
+                                          ticket.nomeCliente ?? "Sconosciuto",
+                                    ),
+                                    const SizedBox(height: 8),
+                                    _buildInfoRow(
+                                      context,
+                                      label: "Contenuto",
+                                      value:
+                                          "${ticket.contenuto!.length > 45 ? ticket.contenuto!.substring(0, 45) : ticket.contenuto}...",
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    ticket.statoPratica ?? "Sconosciuto",
+                                    style: TextStyle(
+                                      color: () {
+                                        switch (ticket.statoPratica) {
+                                          case "In lavorazione":
+                                            return Colors.orange;
+                                          case "Chiuso":
+                                            return Colors.green;
+                                          case "Prendere in Carico":
+                                            return Colors.red;
+                                          case "Attendiamo Chiamata":
+                                            return Colors.grey;
+                                          case "Attende Risposta":
+                                            return Colors.blue;
+                                          default:
+                                            return Theme.of(
+                                              context,
+                                            ).colorScheme.primary;
+                                        }
+                                      }(),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                    const SizedBox(height: 8),
+
+                                  Text(
+                                    ticket.tipologia ?? "N/A",
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(context).colorScheme.primary,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                    const SizedBox(height: 8),
+
+                                  IconButton(
+                                    padding: EdgeInsets.zero,
+                                    constraints: const BoxConstraints(),
+                                    iconSize: 18,
+                                    onPressed: () async {
+                                      final response = await http.delete(
+                                        Uri.parse(
+                                          "${dotenv.env['IP_ADDR']}/api/appunti/${ticket.id}",
+                                        ),
+                                      );
+                                      if (response.statusCode == 200) {
+                                        setState(() {
+                                          _tickets?.remove(ticket);
+                                        });
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Ticket eliminato con successo!",
+                                            ),
+                                          ),
+                                        );
+                                      } else {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              "Errore durante l'eliminazione del ticket.",
+                                            ),
+                                          ),
+                                        );
+                                      }
+                                    },
+                                    icon: const Icon(
+                                      Icons.remove,
+                                      color: Colors.white,
+                                    ),
+                                    style: IconButton.styleFrom(
+                                      backgroundColor: const Color.fromARGB(
+                                        255,
+                                        200,
+                                        100,
+                                        100,
+                                      ),
+                                      fixedSize: const Size(18, 18),
+                                    ),
+
+                                  ),
+                                    const SizedBox(height: 8),
+
+                                ],
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
-              ],
-            ),
+                  );
+                }).toList(),
           ),
         ),
-      );
-    }).toList(),
-  );
-}
-        
+      ],
+    );
+  }
 
   Widget _buildInfoRow(
     BuildContext context, {

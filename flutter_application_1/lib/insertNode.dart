@@ -14,6 +14,7 @@ class InsertPage extends StatefulWidget {
 }
 
 class _InsertPageState extends State<InsertPage> {
+  String? _selectedStato;
   
   final controllerAutore = TextEditingController();
   final controllerCliente = TextEditingController();
@@ -67,12 +68,19 @@ class _InsertPageState extends State<InsertPage> {
                           labelText: "Contenuto Ticket",
                         ),
                        ),
-                        TextFormField(
-                        controller: controllerTipologia,
-                        decoration: const InputDecoration(
-                          labelText: "Tipologia Richiesta",
-                        ),
-                       ),
+                        DropdownButtonExample(
+                              dropdownValue: _selectedStato ?? "Informazione",
+                              
+                              onChanged: (String? newValue) {
+                                if (newValue != null) {
+                                  setState(() {
+                                    _selectedStato = newValue;
+                                  });
+                                  print("Stato selezionato: $newValue");
+                                  // Qui puoi aggiungere la logica per salvare nel database
+                                }
+                              },
+                            ),
                       Container(
                         margin: EdgeInsets.all(16),
                         child:
@@ -97,7 +105,7 @@ class _InsertPageState extends State<InsertPage> {
   }
 
   void _CallApi(){
-    final url = Uri.parse("${dotenv.env['IP_ADDR']}:${dotenv.env['PORT']}/api/appunti");
+    final url = Uri.parse("${dotenv.env['IP_ADDR']}/api/appunti");
     http.post(url,headers: {
     "Content-Type": "application/json",
   },
@@ -105,7 +113,7 @@ class _InsertPageState extends State<InsertPage> {
     "nomeAutore": controllerAutore.text,
     "nomePersona": controllerCliente.text,
     "contenuto": controllerContenuto.text,
-    "tipologia": controllerTipologia.text,
+    "tipologia": _selectedStato ?? "Informazione",
   })).then((response) {
       if (response.statusCode == 200) {
         print("Ticket inserito con successo");
@@ -123,4 +131,77 @@ class _InsertPageState extends State<InsertPage> {
     context.go('/');
   }
 
+}
+
+class DropdownButtonExample extends StatefulWidget {
+  final String dropdownValue;
+  
+  final Function(String?)? onChanged;
+  
+  const DropdownButtonExample({
+    super.key,
+    required this.dropdownValue,
+    
+    this.onChanged,
+  });
+
+  @override
+  State<DropdownButtonExample> createState() => _DropdownButtonExampleState();
+}
+
+class _DropdownButtonExampleState extends State<DropdownButtonExample> {
+  String? dropdownValue;
+  List<String>? list = [
+    "Informazione",
+    "Ordine",
+  ];
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    
+    // Assicurati che il valore sia nella lista, altrimenti usa il primo elemento
+    if (list != null && list!.contains(widget.dropdownValue)) {
+      dropdownValue = widget.dropdownValue;
+    } else if (list != null && list!.isNotEmpty) {
+      dropdownValue = list!.first;
+    }
+    print("Dropdown value: $dropdownValue");
+  }
+
+  @override
+  void didUpdateWidget(DropdownButtonExample oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.dropdownValue != widget.dropdownValue) {
+      setState(() {
+        if (list != null && list!.contains(widget.dropdownValue)) {
+          dropdownValue = widget.dropdownValue;
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButton<String>(
+      value: dropdownValue,
+      icon: const Icon(Icons.arrow_downward),
+      elevation: 16,
+      style: TextStyle(color: Theme.of(context).colorScheme.primary),
+      underline: Container(height: 2, color: Colors.deepPurpleAccent),
+      onChanged: (String? value) {
+        setState(() {
+          dropdownValue = value;
+        });
+        // Chiama il callback del widget genitore
+        if (widget.onChanged != null) {
+          widget.onChanged!(value);
+        }
+      },
+      items: list?.map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(value: value, child: Text(value));
+      }).toList(),
+    );
+  }
 }
