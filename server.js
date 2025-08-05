@@ -153,7 +153,7 @@ app.post('/api/appunti', upload.array('immagini', 5), async (req, res) => {
 // PUT - Aggiorna appunto esistente
 app.put('/api/appunti/:id', upload.array('nuoveImmagini', 5), async (req, res) => {
   try {
-    const { nomeAutore, nomePersona, contenuto, immaginiDaRimuovere } = req.body;
+    const { nomeAutore, nomePersona, contenuto, immaginiDaRimuovere, statoPratica, dipendenteResponsabile } = req.body;
 
     const appunto = await Appunto.findById(req.params.id);
     if (!appunto) {
@@ -188,6 +188,8 @@ app.put('/api/appunti/:id', upload.array('nuoveImmagini', 5), async (req, res) =
     if (nomeAutore) appunto.nomeAutore = nomeAutore;
     if (nomePersona) appunto.nomePersona = nomePersona;
     if (contenuto) appunto.contenuto = contenuto;
+    if (statoPratica) appunto.statoPratica = statoPratica;
+    if (dipendenteResponsabile) appunto.dipendenteResponsabile = dipendenteResponsabile;
     appunto.dataModifica = new Date();
 
     const appuntoAggiornato = await appunto.save();
