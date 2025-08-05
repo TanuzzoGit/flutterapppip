@@ -72,7 +72,7 @@ class Appunto {
 class fetchAppunto {
   Future<List<Appunto>> getAppunti() async {
     final response = await http.get(
-      Uri.parse("${dotenv.env['IP_ADDR']}/api/appunti"),
+      Uri.parse("${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti"),
     );
 
     if (response.statusCode != 200) {
@@ -122,7 +122,7 @@ class _ListaState extends State<Lista> {
 
   void FilterByName(String nomecliente) async {
     final response = await http.get(
-      Uri.parse("${dotenv.env['IP_ADDR']}/api/appunti/client/$nomecliente"),
+      Uri.parse("${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti/client/$nomecliente"),
     );
     final List<Appunto> appunti =
         (json.decode(response.body) as List).map((data) {
@@ -368,7 +368,7 @@ class _ListaState extends State<Lista> {
                                     onPressed: () async {
                                       final response = await http.delete(
                                         Uri.parse(
-                                          "${dotenv.env['IP_ADDR']}/api/appunti/${ticket.id}",
+                                          "${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti/${ticket.id}",
                                         ),
                                       );
                                       if (response.statusCode == 200) {

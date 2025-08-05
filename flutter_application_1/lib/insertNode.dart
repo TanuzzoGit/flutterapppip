@@ -1,3 +1,4 @@
+import 'package:flutter_application_1/components/myinputform.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/components/customfloat.dart';
@@ -20,6 +21,8 @@ class _InsertPageState extends State<InsertPage> {
   final controllerCliente = TextEditingController();
   final controllerContenuto = TextEditingController();
   final controllerTipologia = TextEditingController();
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -49,25 +52,10 @@ class _InsertPageState extends State<InsertPage> {
                     //nella versione migliorata tutto questo deve sparire e diventare dinamico perché c'è da ammazzarsi a starci appresso. Tanto gli cambierò tutta la grafica
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      TextFormField(
-                        controller: controllerAutore,
-                        decoration: const InputDecoration(
-                          labelText: "Nome Autore",
-                        ),
-                        
-                      ),
-                      TextFormField(
-                        controller: controllerCliente,
-                        decoration: const InputDecoration(
-                          labelText: "Nome Cliente",
-                        ),
-                      ),
-                       TextFormField(
-                        controller: controllerContenuto,
-                        decoration: const InputDecoration(
-                          labelText: "Contenuto Ticket",
-                        ),
-                       ),
+                      MyInputForm(label: "Nome Autore",controller: controllerAutore,),
+                      MyInputForm(label: "Nome Cliente",controller: controllerCliente),
+                       MyInputForm(label: "Contenuto",controller: controllerContenuto,),
+                       
                         DropdownButtonExample(
                               dropdownValue: _selectedStato ?? "Informazione",
                               
@@ -77,7 +65,7 @@ class _InsertPageState extends State<InsertPage> {
                                     _selectedStato = newValue;
                                   });
                                   print("Stato selezionato: $newValue");
-                                  // Qui puoi aggiungere la logica per salvare nel database
+                                  
                                 }
                               },
                             ),
@@ -87,7 +75,7 @@ class _InsertPageState extends State<InsertPage> {
                       ElevatedButton(
                         
                         onPressed: () {
-                          _CallApi();
+                          testControllers();
                         },
                         child: const Text("Pubblica Ticket"),
                       ),
@@ -103,7 +91,12 @@ class _InsertPageState extends State<InsertPage> {
       ],
     );
   }
-
+  void testControllers(){
+    print("Autore: ${controllerAutore.text}");
+    print("Cliente: ${controllerCliente.text}");
+    print("Contenuto: ${controllerContenuto.text}");
+    print("Tipologia: ${controllerTipologia.text}");
+  }
   void _CallApi(){
     final url = Uri.parse("${dotenv.env['IP_ADDR']}/api/appunti");
     http.post(url,headers: {
@@ -161,7 +154,6 @@ class _DropdownButtonExampleState extends State<DropdownButtonExample> {
     super.initState();
     
     
-    // Assicurati che il valore sia nella lista, altrimenti usa il primo elemento
     if (list != null && list!.contains(widget.dropdownValue)) {
       dropdownValue = widget.dropdownValue;
     } else if (list != null && list!.isNotEmpty) {

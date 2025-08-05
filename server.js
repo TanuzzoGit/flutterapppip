@@ -13,8 +13,10 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
- app.use((req,res,next) => {console.log("Richiesta Ricevuta")
-  next()})
+app.use((req, res, next) => {
+  console.log("Richiesta Ricevuta")
+  next()
+})
 
 // Crea cartella uploads se non esiste
 if (!fs.existsSync('uploads')) {
@@ -62,7 +64,7 @@ const appuntoSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  dipendenteResponsabile:{
+  dipendenteResponsabile: {
     type: String,
     trim: true
   },
@@ -83,14 +85,17 @@ const appuntoSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  statoPratica:{
+  statoPratica: {
     type: String,
     default: 'Prendere in Carico'
   },
-  tipologia:{
+  tipologia: {
     type: String,
     required: true,
 
+  },
+  commenti: {
+    type: [{ type: String }]
   }
 });
 
@@ -99,6 +104,7 @@ const Appunto = mongoose.model('Appunto', appuntoSchema);
 // ROUTES
 
 // GET - Ottieni tutti gli appunti
+
 app.get('/api/appunti', async (req, res) => {
 
   try {
@@ -126,7 +132,7 @@ app.get('/api/appunti/:id', async (req, res) => {
 // POST - Crea nuovo appunto
 app.post('/api/appunti', upload.array('immagini', 5), async (req, res) => {
   try {
-    const { nomeAutore, nomePersona, contenuto,tipologia } = req.body;
+    const { nomeAutore, nomePersona, contenuto, tipologia } = req.body;
 
     // Processa le immagini caricate
     const immagini = req.files ? req.files.map(file => ({
@@ -258,6 +264,23 @@ app.get('/api/appunti/search/:query', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+app.put('/api/commenti/aggiungiCommento', async (req, res) => {
+  const { ticketId, commento } = req.body
+  try {
+
+
+    Appunto.findOneAndUpdate({ _id: ticketId },
+      {
+        $push: {
+          commenti: commento
+        }
+      }
+    )
+  }
+  catch (error) {
+
+  }
+})
 
 // Error handling middleware
 app.use((error, req, res, next) => {
@@ -270,7 +293,7 @@ app.use((error, req, res, next) => {
 });
 
 // Avvia server
-app.listen(3000,"0.0.0.0", () => {
+app.listen(3000, "0.0.0.0", () => {
   console.log(`Server in ascolto sulla porta ${PORT}`);
   console.log(`MongoDB connesso a: mongodb://localhost:27017/appunti_app`);
 });
