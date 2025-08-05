@@ -4,7 +4,7 @@ import 'package:flutter_application_1/components/navbar.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
+import 'palette.dart' as palette;
 const List<String> stati = <String>[
   'Prendere in Carico',
   'In Lavorazione',
@@ -44,7 +44,9 @@ class _SpecificTicketState extends State<SpecificTicket> {
 
   Future<void> _fetchTicketDetails() async {
     final response = await http.get(
-      Uri.parse('${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti/${widget.ticketId}'),
+      Uri.parse(
+        '${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti/${widget.ticketId}',
+      ),
     );
 
     if (response.statusCode == 200) {
@@ -152,13 +154,12 @@ class _SpecificTicketState extends State<SpecificTicket> {
                                       _selectedStato = newValue;
                                     });
                                     print("Stato selezionato: $newValue");
-                                    
                                   }
                                 },
                               ),
                             ],
                           ),
-                          
+
                           SizedBox(height: 10),
                           Row(
                             children: [
@@ -188,6 +189,63 @@ class _SpecificTicketState extends State<SpecificTicket> {
                               SizedBox(height: 50),
                             ],
                           ),
+                          Container(
+                            //TODO funzione get Commenti, ma prima popola almeno un'entry del db con dei commenti.
+                            height: 300,
+                            width: 500,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(10),
+                              ),
+                              border: Border.all(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 2,
+                              ),
+                              color: Theme.of(context).colorScheme.surface,
+                            ),
+                            child: Column(
+                              children: [
+                                SingleChildScrollView(
+                                  //TODO:Rendere componente dinamico
+                                  child: Column(
+                                    children: [
+                                      //Padding.
+                                      SizedBox(height: 12),
+
+                                      Container(decoration: BoxDecoration(color: const Color.fromARGB(255,247,187,76,),borderRadius: BorderRadius.only(
+                                            bottomRight: Radius.circular(15),
+                                            topRight: Radius.circular(15),
+                                            bottomLeft: Radius.circular(15),
+                                          ),
+                                        ),
+                                        padding: const EdgeInsets.all(8),
+                                        child: Column(mainAxisAlignment:MainAxisAlignment.start,crossAxisAlignment:CrossAxisAlignment.start,children: 
+                                        [
+                                            Text(
+                                              "Giuseppe:",
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                            Text(
+                                              "Commento Generico sulla situazione di La Rocca",
+                                              style: TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Spacer(),
+                                TextFormField(),
+                              ],
+                            ),
+                          ),
                           Spacer(),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -214,22 +272,21 @@ class _SpecificTicketState extends State<SpecificTicket> {
                                 ],
                               ),
                               ElevatedButton.icon(
-                                  icon: Icon(Icons.save),
-                                  label: Text("Salva Modifiche"),
-                                  onPressed: () {
-                                    _updateTicket();
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor:
-                                        Theme.of(context).colorScheme.primary,
-                                    foregroundColor: Colors.white,
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 24,
-                                      vertical: 12,
-                                    ),
+                                icon: Icon(Icons.save),
+                                label: Text("Salva Modifiche"),
+                                onPressed: () {
+                                  _updateTicket();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      Theme.of(context).colorScheme.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 24,
+                                    vertical: 12,
                                   ),
                                 ),
-                              
+                              ),
                             ],
                           ),
                         ],
@@ -243,7 +300,8 @@ class _SpecificTicketState extends State<SpecificTicket> {
   }
 
   Future<void> _updateTicket() async {
-    final url = '${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti/${widget.ticketId}';
+    final url =
+        '${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti/${widget.ticketId}';
 
     try {
       final response = await http.put(
