@@ -10,44 +10,47 @@ class commentcard extends StatefulWidget {
 
 class commentcardstate extends State<commentcard> {
   TextEditingController commentcontroller = TextEditingController();
-  
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
+
       child: Card(
         elevation: 8,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Padding(
-              padding: const EdgeInsets.all(16),  // Nota: ho cambiato EdgeInsetsGeometry in EdgeInsets
+              padding: const EdgeInsets.all(
+                16,
+              ), // Nota: ho cambiato EdgeInsetsGeometry in EdgeInsets
               child: messageScroller(comments: widget.comments),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Expanded(
+
+             Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center, // Allinea in fondo
+              children: [
+
+                // TextField espandibile
+                Expanded(
+                  
                     child: Textfield(
                       controller: commentcontroller,
-                      hintText: "Scrivi un commento...",
-                      maxLines: null, // Permette multilinea
+                      maxLines: null, // Permette espansione verticale
+                      // Altezza minima iniziale
+                      
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.send),
-                    onPressed: () {
-                      // Logica per inviare il commento
-                    },
-                  ),
-                ],
-              ),
-            ),
+                
+                IconButton(onPressed: (){print("AAAAAAAAAa");}, icon: Icon(Icons.send)),
+
           ],
         ),
-      ),
-    );
+        )]),
+      ));
   }
 }
 
@@ -68,20 +71,6 @@ class _messageState extends State<messageScroller> {
         child: Column(
           children: [
             SizedBox(height: 12),
-            ...widget.comments.map(
-              (comment) => messageBubble(
-                autore: comment['autore'] ?? 'Anonimo',
-                testo: comment['testo'] ?? '',
-                date: comment['data'] ?? '',
-              ),
-            ),
-            ...widget.comments.map(
-              (comment) => messageBubble(
-                autore: comment['autore'] ?? 'Anonimo',
-                testo: comment['testo'] ?? '',
-                date: comment['data'] ?? '',
-              ),
-            ),
             ...widget.comments.map(
               (comment) => messageBubble(
                 autore: comment['autore'] ?? 'Anonimo',

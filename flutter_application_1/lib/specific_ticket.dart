@@ -92,7 +92,7 @@ class _SpecificTicketState extends State<SpecificTicket> {
           body:
               _ticketDetails == null
                   ? Center(child: CircularProgressIndicator())
-                  : Padding(
+                  : SingleChildScrollView(child:Padding(
                     padding: const EdgeInsets.all(14.0),
                     child: Column(
                       children: [
@@ -252,7 +252,7 @@ class _SpecificTicketState extends State<SpecificTicket> {
                             ),
                           ),
                         ),
-                        SizedBox(height: 24),
+                        SizedBox(height: 12),
 
                         // Container(child: Column(children: [SingleChildScrollView(child:Column(children:[
                         //   Container(child:Text("BBBBBBBBbb"),decoration: BoxDecoration(color: const Color.fromARGB(255,247,187,76,),borderRadius: BorderRadius.only(
@@ -264,9 +264,9 @@ class _SpecificTicketState extends State<SpecificTicket> {
                         commentcard(comments: _comments),
                       ],
                     ),
-                  ),
+                  )),
         ),
-        customfloat(),
+        // customfloat(),
       ],
     );
   }
