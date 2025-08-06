@@ -9,10 +9,10 @@ class Navbar extends StatelessWidget implements PreferredSizeWidget {
     
     return AppBar(
       title: Text(title),
+      elevation: 10,
       shape: Border(
         bottom: BorderSide(
           color: Theme.of(context).colorScheme.primary,
-          width: 2,
         ),
       ),
       backgroundColor: Theme.of(context).colorScheme.inversePrimary,

@@ -157,11 +157,11 @@ class _ListaState extends State<Lista> {
                 ElevatedButton(onPressed:() {setState(() {
                   isFiltered = false;
                   _getTickets();
-                });} , child: Icon(Icons.close, color: Colors.black), style: ElevatedButton.styleFrom(
+                });} , style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                   foregroundColor: Theme.of(context).colorScheme.onPrimaryContainer,
                   shape: CircleBorder(),
-                ))
+                ), child: Icon(Icons.close, color: Colors.black))
                : ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).colorScheme.primaryContainer,

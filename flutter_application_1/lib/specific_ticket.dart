@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/components/commentcard.dart';
 import 'package:flutter_application_1/components/customfloat.dart';
 import 'package:flutter_application_1/components/navbar.dart';
 import 'package:flutter_application_1/infobox.dart';
@@ -34,9 +35,10 @@ class SpecificTicket extends StatefulWidget {
 
 class _SpecificTicketState extends State<SpecificTicket> {
   Map<String, dynamic>? _ticketDetails;
+  List<dynamic> _comments = [];
+
   String? _selectedStato;
   String? _selectedResponsabile;
-
   @override
   void initState() {
     super.initState();
@@ -53,10 +55,26 @@ class _SpecificTicketState extends State<SpecificTicket> {
     if (response.statusCode == 200) {
       setState(() {
         _ticketDetails = json.decode(response.body);
+        print(_ticketDetails);
         // Inizializza i valori selezionati
         _selectedStato = _ticketDetails!['statoPratica'] ?? stati.first;
         _selectedResponsabile =
             _ticketDetails!['dipendenteResponsabile'] ?? colleghi.first;
+      });
+    } else {
+      throw Exception('Failed to load ticket details');
+    }
+    print(widget.ticketId);
+    final res2 = await http.get(
+      Uri.parse(
+        "${dotenv.env['PROD'] == "true" ? '${dotenv.env['IP_ADDR']}/api/commenti/${widget.ticketId}' : dotenv.env['DEV']}/api/commenti/${widget.ticketId}",
+      ),
+    );
+
+    if (res2.statusCode == 200) {
+      setState(() {
+        _comments = json.decode(res2.body);
+        print(_comments);
       });
     } else {
       throw Exception('Failed to load ticket details');
@@ -78,122 +96,161 @@ class _SpecificTicketState extends State<SpecificTicket> {
                       children: [
                         Card(
                           elevation: 10,
-                          child:Padding(
-                            
-                            padding:EdgeInsetsGeometry.all(18) ,child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              infobox(label: "Autore", value: _ticketDetails?["nomeAutore"]  , icon: Icon(Icons.person_outline,color:Color.fromARGB(255, 46, 142, 211)),avatarColor: Color.fromARGB(255,217,238,253)),
-                              SizedBox(height: 10),
-                              infobox(label: "Cliente", value: _ticketDetails?["nomePersona"]  , icon: Icon(Icons.work_outline_outlined,color:Color.fromARGB(255, 25, 197, 34)),avatarColor: Color.fromARGB(255, 190, 255, 193),),
-                              SizedBox(height: 10),
-infobox(label: "Contenuto", value: _ticketDetails?["contenuto"]  , icon: Icon(Icons.assignment_outlined)),
-                              SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Text(
-                                    "Stato: ",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
+                          child: Padding(
+                            padding: EdgeInsetsGeometry.all(18),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                infobox(
+                                  label: "Autore",
+                                  value: _ticketDetails?["nomeAutore"],
+                                  icon: Icon(
+                                    Icons.person_outline,
+                                    color: Color.fromARGB(255, 46, 142, 211),
+                                  ),
+                                  avatarColor: Color.fromARGB(
+                                    255,
+                                    217,
+                                    238,
+                                    253,
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                infobox(
+                                  label: "Cliente",
+                                  value: _ticketDetails?["nomePersona"],
+                                  icon: Icon(
+                                    Icons.work_outline_outlined,
+                                    color: Color.fromARGB(255, 25, 197, 34),
+                                  ),
+                                  avatarColor: Color.fromARGB(
+                                    255,
+                                    190,
+                                    255,
+                                    193,
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                infobox(
+                                  label: "Contenuto",
+                                  value: _ticketDetails?["contenuto"],
+                                  icon: Icon(Icons.assignment_outlined),
+                                ),
+                                SizedBox(height: 10),
+                                Row(
+                                  children: [
+                                    Text(
+                                      "Stato: ",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                      ),
                                     ),
-                                  ),
-                                  DropdownButtonExample(
-                                    dropdownValue:
-                                        _selectedStato ?? stati.first,
-                                    list: stati,
-                                    onChanged: (String? newValue) {
-                                      if (newValue != null) {
-                                        setState(() {
-                                          _selectedStato = newValue;
-                                        });
-                                        print("Stato selezionato: $newValue");
-                                      }
-                                    },
-                                  ),
-                                ],
-                              ),
-
-                              SizedBox(height: 10),
-                              Row(
-                                children: [
-                                  Text(
-                                    "Responsabile: ",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color:
-                                          Theme.of(context).colorScheme.primary,
+                                    DropdownButtonExample(
+                                      dropdownValue:
+                                          _selectedStato ?? stati.first,
+                                      list: stati,
+                                      onChanged: (String? newValue) {
+                                        if (newValue != null) {
+                                          setState(() {
+                                            _selectedStato = newValue;
+                                          });
+                                          print("Stato selezionato: $newValue");
+                                        }
+                                      },
                                     ),
-                                  ),
-                                  DropdownButtonExample(
-                                    dropdownValue:
-                                        _selectedResponsabile ?? colleghi.first,
-                                    list: colleghi,
-                                    onChanged: (String? newValue) {
-                                      if (newValue != null) {
-                                        setState(() {
-                                          _selectedResponsabile = newValue;
-                                        });
-                                        print(
-                                          "Responsabile selezionato: $newValue",
-                                        );
-                                      }
-                                    },
-                                  ),
-                                  SizedBox(height: 50),
-                                ],
-                              ),
+                                  ],
+                                ),
 
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        "Data Ticket: ",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color:
-                                              Theme.of(
-                                                context,
-                                              ).colorScheme.primary,
+                                SizedBox(height: 10),
+                                //TODO fare i dropdown stilizzandoli e rendendoli dinamici
+                                Row(
+                                  children: [
+                                    Text(
+                                      "Responsabile: ",
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                      ),
+                                    ),
+                                    DropdownButtonExample(
+                                      dropdownValue:
+                                          _selectedResponsabile ??
+                                          colleghi.first,
+                                      list: colleghi,
+                                      onChanged: (String? newValue) {
+                                        if (newValue != null) {
+                                          setState(() {
+                                            _selectedResponsabile = newValue;
+                                          });
+                                          print(
+                                            "Responsabile selezionato: $newValue",
+                                          );
+                                        }
+                                      },
+                                    ),
+                                    SizedBox(height: 50),
+                                  ],
+                                ),
+                                //TODO mettere nel footer
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "Data Ticket: ",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                          ),
+                                        ),
+                                        Text(
+                                          _ticketDetails!['dataCreazione']
+                                                  .substring(0, 10) ??
+                                              'N/A',
+                                          style: TextStyle(fontSize: 14),
+                                        ),
+                                      ],
+                                    ),
+                                    ElevatedButton.icon(
+                                      icon: Icon(Icons.save),
+                                      label: Text("Salva Modifiche"),
+                                      onPressed: () {
+                                        _updateTicket();
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                        foregroundColor: Colors.white,
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 24,
+                                          vertical: 12,
                                         ),
                                       ),
-                                      Text(
-                                        _ticketDetails!['dataCreazione']
-                                                .substring(0, 10) ??
-                                            'N/A',
-                                        style: TextStyle(fontSize: 14),
-                                      ),
-                                    ],
-                                  ),
-                                  ElevatedButton.icon(
-                                    icon: Icon(Icons.save),
-                                    label: Text("Salva Modifiche"),
-                                    onPressed: () {
-                                      _updateTicket();
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor:
-                                          Theme.of(context).colorScheme.primary,
-                                      foregroundColor: Colors.white,
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 24,
-                                        vertical: 12,
-                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ))
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
-                        SizedBox(height: 24,),
+                        SizedBox(height: 24),
 
                         // Container(child: Column(children: [SingleChildScrollView(child:Column(children:[
                         //   Container(child:Text("BBBBBBBBbb"),decoration: BoxDecoration(color: const Color.fromARGB(255,247,187,76,),borderRadius: BorderRadius.only(
@@ -202,71 +259,7 @@ infobox(label: "Contenuto", value: _ticketDetails?["contenuto"]  , icon: Icon(Ic
                         //                          bottomLeft: Radius.circular(15),
                         //                        ),
                         //                      ),)]))]))
-                        Container(
-                          //TODO funzione get Commenti, ma prima popola almeno un'entry del db con dei commenti.
-                          
-                          decoration: BoxDecoration(
-                            
-                            borderRadius: BorderRadius.all(Radius.circular(10)),
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.primary,
-                              width: 2,
-                            ),
-                            color: Theme.of(context).colorScheme.surface,
-                          ),
-                          child: Column(
-                            children: [
-                              SingleChildScrollView(
-                                //TODO:Rendere componente dinamico
-                                child: Column(
-                                  children: [
-                                    //Padding.
-                                    SizedBox(height: 12),
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: const Color.fromARGB(
-                                          255,
-                                          247,
-                                          187,
-                                          76,
-                                        ),
-                                        borderRadius: BorderRadius.only(
-                                          bottomRight: Radius.circular(15),
-                                          topRight: Radius.circular(15),
-                                          bottomLeft: Radius.circular(15),
-                                        ),
-                                      ),
-                                      padding: const EdgeInsets.all(8),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.start,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            "Giuseppe:",
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          Text(
-                                            "Commento Generico sulla situazione di La Rocca",
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              TextFormField(),
-                            ],
-                          ),
-                        ),
+                        commentcard(comments: _comments),
                       ],
                     ),
                   ),
