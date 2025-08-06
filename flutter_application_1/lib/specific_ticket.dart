@@ -65,11 +65,13 @@ class _SpecificTicketState extends State<SpecificTicket> {
       throw Exception('Failed to load ticket details');
     }
     print(widget.ticketId);
+    String? finalUrl = dotenv.env['PROD'] == "true" ? '${dotenv.env['IP_ADDR']}' : dotenv.env['DEV'];
     final res2 = await http.get(
       Uri.parse(
-        "${dotenv.env['PROD'] == "true" ? '${dotenv.env['IP_ADDR']}/api/commenti/${widget.ticketId}' : dotenv.env['DEV']}/api/commenti/${widget.ticketId}",
+        "${finalUrl}/api/commenti/${widget.ticketId}",
       ),
     );
+    print("${finalUrl}/api/commenti/${widget.ticketId}");
 
     if (res2.statusCode == 200) {
       setState(() {
