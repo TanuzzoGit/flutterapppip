@@ -4,14 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_application_1/components/textfield.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+import 'package:flutter_application_1/infobox.dart';
 class commentcard extends StatefulWidget {
+  final Function updateTickets;
   final List<dynamic> comments;
   final String ticketId;
+  final String content;
   const commentcard({
     super.key,
+    required this.content,
     required this.comments,
     required this.ticketId,
+    required this.updateTickets
   });
   @override
   State<commentcard> createState() => commentcardstate();
@@ -19,7 +23,7 @@ class commentcard extends StatefulWidget {
 
 class commentcardstate extends State<commentcard> {
   TextEditingController commentcontroller = TextEditingController();
-
+  ScrollController scrollbar = ScrollController();
 Future<void> _inviaCommento() async {
   if (commentcontroller.text.isEmpty) return;
 
@@ -32,14 +36,14 @@ Future<void> _inviaCommento() async {
       body: jsonEncode({
         'ticketId': widget.ticketId,
         'commento': {
-          'autore': 'NomeAutore', // Sostituisci con il nome reale dell'autore
+          'autore': 'NomeAutore', 
           'testo': commentcontroller.text,
         }
       }),
     );
 
     if (response.statusCode == 200) {
-      // Commento inviato con successo
+      widget.updateTickets();
       commentcontroller.clear();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Commento inviato con successo')),
@@ -61,19 +65,31 @@ Future<void> _inviaCommento() async {
       width: double.infinity,
 
       child: Card(
+        color: Colors.white,
         elevation: 8,
-        child: Column(
+        child:
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16,vertical: 10),
+          child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
+          children: 
+          [
+            infobox(
+                                  label: "Contenuto",
+                                  value: widget.content,
+                                  
+                                  icon: Icon(Icons.assignment_outlined),
+                                ),
+                                 const Divider(height: 40, thickness: 1, indent: 40, endIndent: 40, color: Color.fromARGB(83, 0, 0, 0)),
             Padding(
-              padding: const EdgeInsets.all(
-                16,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,vertical:0
               ), // Nota: ho cambiato EdgeInsetsGeometry in EdgeInsets
               child: messageScroller(comments: widget.comments),
             ),
 
             Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal:4,vertical: 0),
               child: Row(
                 crossAxisAlignment:
                     CrossAxisAlignment.center, // Allinea in fondo
@@ -97,7 +113,7 @@ Future<void> _inviaCommento() async {
           ],
         ),
       ),
-    );
+    ));
   }
 }
 
@@ -151,7 +167,7 @@ class _messageBubble extends State<messageBubble> {
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color.fromARGB(113, 247, 187, 76),
+            color: const Color.fromARGB(62, 247, 187, 76),
             borderRadius: BorderRadius.all(Radius.circular(8)),
             border: Border.all(
               color: const Color.fromARGB(255, 247, 187, 76),

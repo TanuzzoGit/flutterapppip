@@ -277,6 +277,7 @@ class _ListaState extends State<Lista> {
                     onTap: () => context.push('/ticket/${ticket.id}'),
                     borderRadius: BorderRadius.circular(10.0),
                     child: Card(
+                      color:Colors.white,
                       margin: const EdgeInsets.symmetric(vertical: 8.0),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10.0),

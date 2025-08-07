@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/components/commentcard.dart';
-import 'package:flutter_application_1/components/customfloat.dart';
+import 'package:flutter_application_1/components/custRectanglebutton.dart';
 import 'package:flutter_application_1/components/navbar.dart';
 import 'package:flutter_application_1/infobox.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'palette.dart' as pals;
 
 const List<String> stati = <String>[
   'Prendere in Carico',
@@ -27,15 +28,17 @@ const List<String> colleghi = <String>[
 class SpecificTicket extends StatefulWidget {
   final String ticketId;
 
-  const SpecificTicket({super.key, required this.ticketId});
+  const SpecificTicket({required this.ticketId});
 
   @override
   State<SpecificTicket> createState() => _SpecificTicketState();
 }
 
 class _SpecificTicketState extends State<SpecificTicket> {
+  final GlobalKey commentKey = GlobalKey<_SpecificTicketState>();
   Map<String, dynamic>? _ticketDetails;
   List<dynamic> _comments = [];
+  final ScrollController mainScroll = ScrollController();
 
   String? _selectedStato;
   String? _selectedResponsabile;
@@ -65,11 +68,12 @@ class _SpecificTicketState extends State<SpecificTicket> {
       throw Exception('Failed to load ticket details');
     }
     print(widget.ticketId);
-    String? finalUrl = dotenv.env['PROD'] == "true" ? '${dotenv.env['IP_ADDR']}' : dotenv.env['DEV'];
+    String? finalUrl =
+        dotenv.env['PROD'] == "true"
+            ? '${dotenv.env['IP_ADDR']}'
+            : dotenv.env['DEV'];
     final res2 = await http.get(
-      Uri.parse(
-        "${finalUrl}/api/commenti/${widget.ticketId}",
-      ),
+      Uri.parse("${finalUrl}/api/commenti/${widget.ticketId}"),
     );
     print("${finalUrl}/api/commenti/${widget.ticketId}");
 
@@ -92,127 +96,70 @@ class _SpecificTicketState extends State<SpecificTicket> {
           body:
               _ticketDetails == null
                   ? Center(child: CircularProgressIndicator())
-                  : SingleChildScrollView(child:Padding(
-                    padding: const EdgeInsets.all(14.0),
-                    child: Column(
-                      children: [
-                        Card(
-                          elevation: 10,
-                          child: Padding(
-                            padding: EdgeInsetsGeometry.all(18),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                infobox(
-                                  label: "Autore",
-                                  value: _ticketDetails?["nomeAutore"],
-                                  icon: Icon(
-                                    Icons.person_outline,
-                                    color: Color.fromARGB(255, 46, 142, 211),
-                                  ),
-                                  avatarColor: Color.fromARGB(
-                                    255,
-                                    217,
-                                    238,
-                                    253,
-                                  ),
-                                ),
-                                SizedBox(height: 10),
-                                infobox(
-                                  label: "Cliente",
-                                  value: _ticketDetails?["nomePersona"],
-                                  icon: Icon(
-                                    Icons.work_outline_outlined,
-                                    color: Color.fromARGB(255, 25, 197, 34),
-                                  ),
-                                  avatarColor: Color.fromARGB(
-                                    255,
-                                    190,
-                                    255,
-                                    193,
-                                  ),
-                                ),
-                                SizedBox(height: 10),
-                                infobox(
-                                  label: "Contenuto",
-                                  value: _ticketDetails?["contenuto"],
-                                  icon: Icon(Icons.assignment_outlined),
-                                ),
-                                SizedBox(height: 10),
-                                Row(
+                  : Scrollbar(
+                    child: SingleChildScrollView(
+                      controller: mainScroll,
+                      child: Padding(
+                        padding: const EdgeInsets.all(14.0),
+                        child: Column(
+                          children: [
+                            Card(
+                              color: Colors.white,
+                              
+                              elevation: 8,
+                              
+                              child: Padding(
+                                padding: EdgeInsetsGeometry.all(18),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(
-                                      "Stato: ",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
+                                    // ElevatedButton(onPressed: (){
+                                    //   mainScroll.jumpTo(mainScroll.position.maxScrollExtent);
+                                    //   // mainScroll.animateTo(mainScroll.position.maxScrollExtent, duration: Duration(milliseconds: 500), curve: Curves.easeInBack);
+                                    // }, child: Icon(Icons.arrow_downward)),
+                                    infobox(
+                                      label: "Autore",
+                                      value: _ticketDetails?["nomeAutore"],
+                                      icon: Icon(
+                                        Icons.person_outline,
+                                        color: Color.fromARGB(
+                                          255,
+                                          46,
+                                          142,
+                                          211,
+                                        ),
+                                      ),
+                                      avatarColor: Color.fromARGB(
+                                        255,
+                                        217,
+                                        238,
+                                        253,
                                       ),
                                     ),
-                                    DropdownButtonExample(
-                                      dropdownValue:
-                                          _selectedStato ?? stati.first,
-                                      list: stati,
-                                      onChanged: (String? newValue) {
-                                        if (newValue != null) {
-                                          setState(() {
-                                            _selectedStato = newValue;
-                                          });
-                                          print("Stato selezionato: $newValue");
-                                        }
-                                      },
+                                    SizedBox(height: 10),
+                                    infobox(
+                                      label: "Cliente",
+                                      value: _ticketDetails?["nomePersona"],
+                                      icon: Icon(
+                                        Icons.work_outline_outlined,
+                                        color: Color.fromARGB(255, 25, 197, 34),
+                                      ),
+                                      avatarColor: Color.fromARGB(
+                                        255,
+                                        190,
+                                        255,
+                                        193,
+                                      ),
                                     ),
-                                  ],
-                                ),
+                                    SizedBox(height: 10),
 
-                                SizedBox(height: 10),
-                                //TODO fare i dropdown stilizzandoli e rendendoli dinamici
-                                Row(
-                                  children: [
-                                    Text(
-                                      "Responsabile: ",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
-                                      ),
-                                    ),
-                                    DropdownButtonExample(
-                                      dropdownValue:
-                                          _selectedResponsabile ??
-                                          colleghi.first,
-                                      list: colleghi,
-                                      onChanged: (String? newValue) {
-                                        if (newValue != null) {
-                                          setState(() {
-                                            _selectedResponsabile = newValue;
-                                          });
-                                          print(
-                                            "Responsabile selezionato: $newValue",
-                                          );
-                                        }
-                                      },
-                                    ),
-                                    SizedBox(height: 50),
-                                  ],
-                                ),
-                                //TODO mettere nel footer
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
+                                    SizedBox(height: 10),
                                     Row(
                                       children: [
                                         Text(
-                                          "Data Ticket: ",
+                                          "Stato: ",
                                           style: TextStyle(
-                                            fontSize: 14,
+                                            fontSize: 18,
                                             fontWeight: FontWeight.bold,
                                             color:
                                                 Theme.of(
@@ -220,73 +167,207 @@ class _SpecificTicketState extends State<SpecificTicket> {
                                                 ).colorScheme.primary,
                                           ),
                                         ),
-                                        Text(
-                                          _ticketDetails!['dataCreazione']
-                                                  .substring(0, 10) ??
-                                              'N/A',
-                                          style: TextStyle(fontSize: 14),
+                                        DropdownButtonExample(
+                                          dropdownValue:
+                                              _selectedStato ?? stati.first,
+                                          list: stati,
+                                          onChanged: (String? newValue) {
+                                            if (newValue != null) {
+                                              setState(() {
+                                                _selectedStato = newValue;
+                                              });
+                                              print(
+                                                "Stato selezionato: $newValue",
+                                              );
+                                            }
+                                          },
                                         ),
                                       ],
                                     ),
-                                    // ElevatedButton.icon(
-                                    //   icon: Icon(Icons.save),
-                                    //   label: Text(""),
-                                      
-                                      
-                                    //   onPressed: () {
-                                    //     _updateTicket();
-                                    //   },
-                                    //   style: ElevatedButton.styleFrom(
-                                    //     iconSize: 12,
-                                    //     backgroundColor:
-                                    //         Theme.of(
-                                    //           context,
-                                    //         ).colorScheme.primary,
-                                    //     foregroundColor: Colors.white,
-                                    //     // padding: EdgeInsets.symmetric(
-                                    //     //   horizontal: 24,
-                                    //     //   vertical: 12,
-                                    //     // ),
-                                    //   ),
-                                    // ),
-                                    Container(
-                                      padding:EdgeInsets.all(0),
-                                    decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(50),
-                                      boxShadow: [BoxShadow(color: const Color.fromARGB(113, 0, 0, 0),blurRadius: 15,spreadRadius:0)],
-                                      color: Theme.of(context).colorScheme.primary,
 
-                                    ),  
-                                    child:
-                                    IconButton(onPressed: _updateTicket, icon: Icon(Icons.save,color:Colors.white))
-                                    )
+                                    SizedBox(height: 10),
+                                    //TODO fare i dropdown stilizzandoli e rendendoli dinamici
+                                    Row(
+                                      children: [
+                                        Text(
+                                          "Responsabile: ",
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color:
+                                                Theme.of(
+                                                  context,
+                                                ).colorScheme.primary,
+                                          ),
+                                        ),
+                                        DropdownButtonExample(
+                                          dropdownValue:
+                                              _selectedResponsabile ??
+                                              colleghi.first,
+                                          list: colleghi,
+                                          onChanged: (String? newValue) {
+                                            if (newValue != null) {
+                                              setState(() {
+                                                _selectedResponsabile =
+                                                    newValue;
+                                              });
+                                              print(
+                                                "Responsabile selezionato: $newValue",
+                                              );
+                                            }
+                                          },
+                                        ),
+                                        SizedBox(height: 50),
+                                      ],
+                                    ),
+                                    //TODO mettere nel footer
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        //Cimitero dei bottoni
+                                        // ElevatedButton.icon(
+                                        //   icon: Icon(Icons.save),
+                                        //   label: Text(""),
+
+                                        //   onPressed: () {
+                                        //     _updateTicket();
+                                        //   },
+                                        //   style: ElevatedButton.styleFrom(
+                                        //     iconSize: 12,
+                                        //     backgroundColor:
+                                        //         Theme.of(
+                                        //           context,
+                                        //         ).colorScheme.primary,
+                                        //     foregroundColor: Colors.white,
+                                        //     // padding: EdgeInsets.symmetric(
+                                        //     //   horizontal: 24,
+                                        //     //   vertical: 12,
+                                        //     // ),
+                                        //   ),
+                                        // ),
+                                        // Container(
+                                        //   padding: EdgeInsets.all(0),
+                                        //   decoration: BoxDecoration(
+                                        //     borderRadius: BorderRadius.circular(
+                                        //       50,
+                                        //     ),
+                                        //     boxShadow: [
+                                        //       BoxShadow(
+                                        //         color: const Color.fromARGB(
+                                        //           113,
+                                        //           0,
+                                        //           0,
+                                        //           0,
+                                        //         ),
+                                        //         blurRadius: 15,
+                                        //         spreadRadius: 0,
+                                        //       ),
+                                        //     ],
+                                        //     color:
+                                        //         Theme.of(
+                                        //           context,
+                                        //         ).colorScheme.primary,
+                                        //   ),
+                                        //   child: IconButton(
+                                        //     onPressed: _updateTicket,
+                                        //     icon: Icon(
+                                        //       Icons.save,
+                                        //       color: Colors.white,
+                                        //     ),
+                                        //   ),
+                                        // ),
+                                      ],
+                                    ),
                                   ],
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 12),
+
+                            // Container(child: Column(children: [SingleChildScrollView(child:Column(children:[
+                            //   Container(child:Text("BBBBBBBBbb"),decoration: BoxDecoration(color: const Color.fromARGB(255,247,187,76,),borderRadius: BorderRadius.only(
+                            //                          bottomRight: Radius.circular(15),
+                            //                          topRight: Radius.circular(15),
+                            //                          bottomLeft: Radius.circular(15),
+                            //                        ),
+                            //                      ),)]))]))
+                            Padding(
+                              padding: EdgeInsets.all(0),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(12),
+                                onTap: () {
+                                  mainScroll.animateTo(
+                                    mainScroll.position.maxScrollExtent,
+                                    duration: Duration(milliseconds: 190),
+                                    curve: Curves.easeIn,
+                                  );
+                                },
+                                child: commentcard(
+                                  comments: _comments,
+                                  ticketId: widget.ticketId,
+                                  updateTickets: _fetchTicketDetails,
+                                  content: _ticketDetails?['contenuto'] ?? "NA",
+                                ),
+                              ),
+                            ),
+                            Row(
+                              children: [
+                                Text(
+                                  "Data Ticket: ",
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                                Text(
+                                  _ticketDetails!['dataCreazione'].substring(
+                                        0,
+                                        10,
+                                      ) ??
+                                      'N/A',
+                                  style: TextStyle(fontSize: 14),
                                 ),
                               ],
                             ),
-                          ),
+                          ],
                         ),
-                        SizedBox(height: 12),
-
-                        // Container(child: Column(children: [SingleChildScrollView(child:Column(children:[
-                        //   Container(child:Text("BBBBBBBBbb"),decoration: BoxDecoration(color: const Color.fromARGB(255,247,187,76,),borderRadius: BorderRadius.only(
-                        //                          bottomRight: Radius.circular(15),
-                        //                          topRight: Radius.circular(15),
-                        //                          bottomLeft: Radius.circular(15),
-                        //                        ),
-                        //                      ),)]))]))
-                        commentcard(comments: _comments,ticketId: widget.ticketId),
-                      ],
+                      ),
                     ),
-                  )),
+                  ),
+          bottomNavigationBar: Container(
+            padding: EdgeInsets.all(8),
+
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border(
+                top: BorderSide(
+                  color: const Color.fromARGB(61, 0, 0, 0),
+                  width: 1
+                ),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                
+                Custrectanglebutton(ico: Icon(Icons.save,color:Colors.white), label: "Salva Modifiche", fun: _updateTicket,primaryColor: pals.navbarButtonPrimary,textColor: pals.textWhite,)
+              ],
+            ),
+          ),
         ),
+
         // customfloat(),
       ],
     );
   }
 
   Future<void> _updateTicket() async {
-    final url = '${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti/${widget.ticketId}';
+    final url =
+        '${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti/${widget.ticketId}';
 
     try {
       final response = await http.put(

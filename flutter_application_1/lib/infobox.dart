@@ -21,6 +21,7 @@ class _infoboxstate extends State<infobox>{
                                   child:
                                   widget.icon,),
                                   SizedBox(width:10),
+                                  Expanded(child:
                                   Column(
                                     mainAxisAlignment: MainAxisAlignment.start,
                                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -29,7 +30,8 @@ class _infoboxstate extends State<infobox>{
                                   Text(
                                     "${widget.label}:",
                                     style: TextStyle(
-                                      fontSize: 18,
+                                      overflow: TextOverflow.ellipsis,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.bold,
                                       color:
                                           Theme.of(context).colorScheme.primary,
@@ -39,7 +41,7 @@ class _infoboxstate extends State<infobox>{
                                     widget.value ?? "NA",
                                     style: TextStyle(fontSize: 16),
                                   ),
-                                ]),
+                                ])),
                               ]);
   }
 }

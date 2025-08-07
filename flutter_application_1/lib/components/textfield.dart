@@ -20,16 +20,19 @@ class Textfield extends StatefulWidget {
 class _TextFieldState extends State<Textfield> {
   @override
   Widget build(BuildContext context) {
-   return 
-
-     Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: TextFormField(
+   return Container(
+        padding: EdgeInsets.symmetric(horizontal: 12,vertical: 0),
+        height: 35,
+        child: 
+      
+      TextFormField(
+        
         controller: widget.controller,
         maxLines: widget.maxLines,
         decoration: pal.decorations.copyWith(
+          
           hintText: widget.hintText,
-          contentPadding: const EdgeInsets.all(12),
+          contentPadding: const EdgeInsets.all(3),
         ),
       ),
     );
