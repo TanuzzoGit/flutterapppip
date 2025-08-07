@@ -1,9 +1,18 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/components/textfield.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class commentcard extends StatefulWidget {
   final List<dynamic> comments;
-  const commentcard({super.key, required this.comments});
+  final String ticketId;
+  const commentcard({
+    super.key,
+    required this.comments,
+    required this.ticketId,
+  });
   @override
   State<commentcard> createState() => commentcardstate();
 }
@@ -11,6 +20,41 @@ class commentcard extends StatefulWidget {
 class commentcardstate extends State<commentcard> {
   TextEditingController commentcontroller = TextEditingController();
 
+Future<void> _inviaCommento() async {
+  if (commentcontroller.text.isEmpty) return;
+
+  final url = '${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/commenti/aggiungiCommento';
+
+  try {
+    final response = await http.put(
+      Uri.parse(url),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'ticketId': widget.ticketId,
+        'commento': {
+          'autore': 'NomeAutore', // Sostituisci con il nome reale dell'autore
+          'testo': commentcontroller.text,
+        }
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // Commento inviato con successo
+      commentcontroller.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Commento inviato con successo')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Errore durante l\'invio del commento')),
+      );
+    }
+  } catch (e) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Errore di connessione: $e')),
+    );
+  }
+}
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -28,29 +72,32 @@ class commentcardstate extends State<commentcard> {
               child: messageScroller(comments: widget.comments),
             ),
 
-             Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center, // Allinea in fondo
-              children: [
-
-                // TextField espandibile
-                Expanded(
-                  
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                crossAxisAlignment:
+                    CrossAxisAlignment.center, // Allinea in fondo
+                children: [
+                  // TextField espandibile
+                  Expanded(
                     child: Textfield(
                       controller: commentcontroller,
                       maxLines: null, // Permette espansione verticale
                       // Altezza minima iniziale
-                      
                     ),
                   ),
-                
-                IconButton(onPressed: (){print("AAAAAAAAAa");}, icon: Icon(Icons.send)),
 
+                  IconButton(
+                    onPressed: _inviaCommento,
+                    icon: Icon(Icons.send),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
-        )]),
-      ));
+      ),
+    );
   }
 }
 
@@ -128,7 +175,7 @@ class _messageBubble extends State<messageBubble> {
           ),
         ),
         Text(
-          "14:50",
+          widget.date ?? "NA",
           style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
         ),
       ],

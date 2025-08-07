@@ -75,7 +75,7 @@ class _InsertPageState extends State<InsertPage> {
                       ElevatedButton(
                         
                         onPressed: () {
-                          testControllers();
+                          _CallApi();
                         },
                         child: const Text("Pubblica Ticket"),
                       ),

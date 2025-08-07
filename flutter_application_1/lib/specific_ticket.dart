@@ -228,24 +228,38 @@ class _SpecificTicketState extends State<SpecificTicket> {
                                         ),
                                       ],
                                     ),
-                                    ElevatedButton.icon(
-                                      icon: Icon(Icons.save),
-                                      label: Text("Salva Modifiche"),
-                                      onPressed: () {
-                                        _updateTicket();
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            Theme.of(
-                                              context,
-                                            ).colorScheme.primary,
-                                        foregroundColor: Colors.white,
-                                        padding: EdgeInsets.symmetric(
-                                          horizontal: 24,
-                                          vertical: 12,
-                                        ),
-                                      ),
-                                    ),
+                                    // ElevatedButton.icon(
+                                    //   icon: Icon(Icons.save),
+                                    //   label: Text(""),
+                                      
+                                      
+                                    //   onPressed: () {
+                                    //     _updateTicket();
+                                    //   },
+                                    //   style: ElevatedButton.styleFrom(
+                                    //     iconSize: 12,
+                                    //     backgroundColor:
+                                    //         Theme.of(
+                                    //           context,
+                                    //         ).colorScheme.primary,
+                                    //     foregroundColor: Colors.white,
+                                    //     // padding: EdgeInsets.symmetric(
+                                    //     //   horizontal: 24,
+                                    //     //   vertical: 12,
+                                    //     // ),
+                                    //   ),
+                                    // ),
+                                    Container(
+                                      padding:EdgeInsets.all(0),
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(50),
+                                      boxShadow: [BoxShadow(color: const Color.fromARGB(113, 0, 0, 0),blurRadius: 15,spreadRadius:0)],
+                                      color: Theme.of(context).colorScheme.primary,
+
+                                    ),  
+                                    child:
+                                    IconButton(onPressed: _updateTicket, icon: Icon(Icons.save,color:Colors.white))
+                                    )
                                   ],
                                 ),
                               ],
@@ -261,7 +275,7 @@ class _SpecificTicketState extends State<SpecificTicket> {
                         //                          bottomLeft: Radius.circular(15),
                         //                        ),
                         //                      ),)]))]))
-                        commentcard(comments: _comments),
+                        commentcard(comments: _comments,ticketId: widget.ticketId),
                       ],
                     ),
                   )),
@@ -272,8 +286,7 @@ class _SpecificTicketState extends State<SpecificTicket> {
   }
 
   Future<void> _updateTicket() async {
-    final url =
-        '${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti/${widget.ticketId}';
+    final url = '${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti/${widget.ticketId}';
 
     try {
       final response = await http.put(

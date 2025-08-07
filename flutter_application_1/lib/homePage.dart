@@ -397,8 +397,9 @@ class _ListaState extends State<Lista> {
                                       }
                                     },
                                     icon: const Icon(
-                                      Icons.remove,
+                                      Icons.clear,
                                       color: Colors.white,
+                                      size: 12,
                                     ),
                                     style: IconButton.styleFrom(
                                       backgroundColor: const Color.fromARGB(
