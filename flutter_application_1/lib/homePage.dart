@@ -111,12 +111,30 @@ class _ListaState extends State<Lista> {
   void initState() {
     super.initState();
     _getTickets();
+    
   }
 
   void _getTickets() async {
     final result = await fetcher.getAppunti();
     setState(() {
       _tickets = result;
+      _tickets?.sort((a, b) {
+                        int getPriority(String? stato) {
+                          switch (stato) {
+                            case "Prendere in Carico":
+                              return 0;
+                            case "Attende Risposta":
+                              return 1;
+                            case "Chiuso":
+                              return 99;
+                            default:
+                              return 2;
+                          }
+                        }
+                        return getPriority(
+                          a.statoPratica,
+                        ).compareTo(getPriority(b.statoPratica));
+                      });
     });
   }
 
@@ -145,6 +163,11 @@ class _ListaState extends State<Lista> {
   bool isFiltered = false;
   @override
   Widget build(BuildContext context) {
+    String? state = GoRouterState.of(context).extra as String?;
+    print(state);
+    if(state == "true") {setState(() {
+      _getTickets();
+    });}
     return Column(
       children: [
         Row(
@@ -228,23 +251,7 @@ class _ListaState extends State<Lista> {
                     setState(() {
                         isFiltered = true;
 
-                      _tickets?.sort((a, b) {
-                        int getPriority(String? stato) {
-                          switch (stato) {
-                            case "Prendere in Carico":
-                              return 0;
-                            case "Attende Risposta":
-                              return 1;
-                            case "Chiuso":
-                              return 99;
-                            default:
-                              return 2;
-                          }
-                        }
-                        return getPriority(
-                          a.statoPratica,
-                        ).compareTo(getPriority(b.statoPratica));
-                      });
+                      
                     });
                   },
                   icon: const Icon(Icons.sort, color: Colors.black),

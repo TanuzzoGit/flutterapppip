@@ -21,7 +21,7 @@ class _TextFieldState extends State<Textfield> {
   @override
   Widget build(BuildContext context) {
    return Container(
-        padding: EdgeInsets.symmetric(horizontal: 12,vertical: 0),
+        padding: EdgeInsets.symmetric(horizontal: 12,vertical: 4),
         height: 35,
         child: 
       

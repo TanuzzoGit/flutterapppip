@@ -8,13 +8,15 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class InsertPage extends StatefulWidget {
-  const InsertPage({super.key});
+  final ValueNotifier<bool> refreshNotifier;
+  const InsertPage({super.key, required this.refreshNotifier});
 
   @override
   State<InsertPage> createState() => _InsertPageState();
 }
 
 class _InsertPageState extends State<InsertPage> {
+
   String? _selectedStato;
   
   final controllerAutore = TextEditingController();
@@ -97,9 +99,9 @@ class _InsertPageState extends State<InsertPage> {
     print("Contenuto: ${controllerContenuto.text}");
     print("Tipologia: ${controllerTipologia.text}");
   }
-  void _CallApi(){
-    final url = Uri.parse("${dotenv.env['IP_ADDR']}/api/appunti");
-    http.post(url,headers: {
+  void _CallApi()async {
+    final url =  Uri.parse("${dotenv.env['IP_ADDR']}/api/appunti");
+   await http.post(url,headers: {
     "Content-Type": "application/json",
   },
   body: jsonEncode({
@@ -121,7 +123,8 @@ class _InsertPageState extends State<InsertPage> {
     controllerCliente.clear();
     controllerContenuto.clear();
     controllerTipologia.clear();
-    context.go('/');
+    widget.refreshNotifier.value = !widget.refreshNotifier.value;
+    context.pushReplacement('/',extra:"aggiorna");
   }
 
 }

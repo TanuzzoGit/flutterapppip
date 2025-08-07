@@ -7,7 +7,10 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // GoRouter configuration
+final ValueNotifier<bool> refreshNotifier = ValueNotifier<bool>(false);
+
 final _router = GoRouter(
+  refreshListenable: refreshNotifier,
   routes: [
     GoRoute(
       path: '/',
@@ -15,7 +18,7 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/insert',
-      builder: (context, state) => const InsertPage(),
+      builder: (context, state) => InsertPage(refreshNotifier: refreshNotifier,),
     ),
     GoRoute(
       path: '/ticket/:ticketId',

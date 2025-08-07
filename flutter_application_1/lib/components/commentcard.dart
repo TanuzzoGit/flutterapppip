@@ -66,7 +66,7 @@ Future<void> _inviaCommento() async {
 
       child: Card(
         color: Colors.white,
-        elevation: 8,
+        elevation: 5,
         child:
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 16,vertical: 10),

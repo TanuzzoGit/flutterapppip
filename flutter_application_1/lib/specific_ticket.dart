@@ -106,7 +106,7 @@ class _SpecificTicketState extends State<SpecificTicket> {
                             Card(
                               color: Colors.white,
                               
-                              elevation: 8,
+                              elevation: 5,
                               
                               child: Padding(
                                 padding: EdgeInsetsGeometry.all(18),
