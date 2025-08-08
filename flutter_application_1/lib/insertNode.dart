@@ -7,6 +7,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class InsertPage extends StatefulWidget {
   final ValueNotifier<bool> refreshNotifier;
   const InsertPage({super.key, required this.refreshNotifier});
@@ -19,7 +21,6 @@ class _InsertPageState extends State<InsertPage> {
 
   String? _selectedStato;
   
-  final controllerAutore = TextEditingController();
   final controllerCliente = TextEditingController();
   final controllerContenuto = TextEditingController();
   final controllerTipologia = TextEditingController();
@@ -54,7 +55,6 @@ class _InsertPageState extends State<InsertPage> {
                     //nella versione migliorata tutto questo deve sparire e diventare dinamico perché c'è da ammazzarsi a starci appresso. Tanto gli cambierò tutta la grafica
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      MyInputForm(label: "Nome Autore",controller: controllerAutore,),
                       MyInputForm(label: "Nome Cliente",controller: controllerCliente),
                        MyInputForm(label: "Contenuto",controller: controllerContenuto,),
                        
@@ -94,18 +94,19 @@ class _InsertPageState extends State<InsertPage> {
     );
   }
   void testControllers(){
-    print("Autore: ${controllerAutore.text}");
     print("Cliente: ${controllerCliente.text}");
     print("Contenuto: ${controllerContenuto.text}");
     print("Tipologia: ${controllerTipologia.text}");
   }
   void _CallApi()async {
+    final prefs = await SharedPreferences.getInstance();
+    final String autore = prefs.getString("utente") ?? "NA";
     final url =  Uri.parse("${dotenv.env['IP_ADDR']}/api/appunti");
    await http.post(url,headers: {
     "Content-Type": "application/json",
   },
   body: jsonEncode({
-    "nomeAutore": controllerAutore.text,
+    "nomeAutore": autore,
     "nomePersona": controllerCliente.text,
     "contenuto": controllerContenuto.text,
     "tipologia": _selectedStato ?? "Informazione",
@@ -119,7 +120,6 @@ class _InsertPageState extends State<InsertPage> {
         print(response.body);
       }
     });
-    controllerAutore.clear();
     controllerCliente.clear();
     controllerContenuto.clear();
     controllerTipologia.clear();

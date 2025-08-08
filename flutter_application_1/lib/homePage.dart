@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
+import 'package:shared_preferences/shared_preferences.dart';
+
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
   final String title;
@@ -14,12 +16,25 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final GlobalKey<_ListaState> listaKey = GlobalKey<_ListaState>();
+  String? persona;
+  @override
+  void initState()  {
+    super.initState();
+   loadUtente();
 
+  }
+  Future<void> loadUtente()async {
+              final prefs = await SharedPreferences.getInstance();
+      final utente = prefs.getString("utente");
+      setState(() {
+        persona = utente;
+      });
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(persona ?? "Non ha letto"),
         shape: Border(
           bottom: BorderSide(
             color: Theme.of(context).colorScheme.primary,
@@ -40,6 +55,17 @@ class _MyHomePageState extends State<MyHomePage> {
             tooltip: 'Aggiungi Nuovo Ticket',
             onPressed: () {
               context.go('/insert');
+            },
+            
+          ),
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'esci',
+            onPressed: ()async {
+              final prefs = await SharedPreferences.getInstance();
+              prefs.setBool("auth", false);
+              prefs.remove("auth");
+              context.go('/login');
             },
           ),
         ],
@@ -369,57 +395,57 @@ class _ListaState extends State<Lista> {
                                   ),
                                     const SizedBox(height: 8),
 
-                                  IconButton(
-                                    padding: EdgeInsets.zero,
-                                    constraints: const BoxConstraints(),
-                                    iconSize: 18,
-                                    onPressed: () async {
-                                      final response = await http.delete(
-                                        Uri.parse(
-                                          "${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti/${ticket.id}",
-                                        ),
-                                      );
-                                      if (response.statusCode == 200) {
-                                        setState(() {
-                                          _tickets?.remove(ticket);
-                                        });
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              "Ticket eliminato con successo!",
-                                            ),
-                                          ),
-                                        );
-                                      } else {
-                                        ScaffoldMessenger.of(
-                                          context,
-                                        ).showSnackBar(
-                                          const SnackBar(
-                                            content: Text(
-                                              "Errore durante l'eliminazione del ticket.",
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                    icon: const Icon(
-                                      Icons.clear,
-                                      color: Colors.white,
-                                      size: 12,
-                                    ),
-                                    style: IconButton.styleFrom(
-                                      backgroundColor: const Color.fromARGB(
-                                        255,
-                                        200,
-                                        100,
-                                        100,
-                                      ),
-                                      fixedSize: const Size(18, 18),
-                                    ),
+                                  // IconButton(
+                                  //   padding: EdgeInsets.zero,
+                                  //   constraints: const BoxConstraints(),
+                                  //   iconSize: 18,
+                                  //   onPressed: () async {
+                                  //     final response = await http.delete(
+                                  //       Uri.parse(
+                                  //         "${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/appunti/${ticket.id}",
+                                  //       ),
+                                  //     );
+                                  //     if (response.statusCode == 200) {
+                                  //       setState(() {
+                                  //         _tickets?.remove(ticket);
+                                  //       });
+                                  //       ScaffoldMessenger.of(
+                                  //         context,
+                                  //       ).showSnackBar(
+                                  //         const SnackBar(
+                                  //           content: Text(
+                                  //             "Ticket eliminato con successo!",
+                                  //           ),
+                                  //         ),
+                                  //       );
+                                  //     } else {
+                                  //       ScaffoldMessenger.of(
+                                  //         context,
+                                  //       ).showSnackBar(
+                                  //         const SnackBar(
+                                  //           content: Text(
+                                  //             "Errore durante l'eliminazione del ticket.",
+                                  //           ),
+                                  //         ),
+                                  //       );
+                                  //     }
+                                  //   },
+                                  //   icon: const Icon(
+                                  //     Icons.clear,
+                                  //     color: Colors.white,
+                                  //     size: 12,
+                                  //   ),
+                                  //   style: IconButton.styleFrom(
+                                  //     backgroundColor: const Color.fromARGB(
+                                  //       255,
+                                  //       200,
+                                  //       100,
+                                  //       100,
+                                  //     ),
+                                  //     fixedSize: const Size(18, 18),
+                                  //   ),
 
-                                  ),
+                                  // ),
                                     const SizedBox(height: 8),
 
                                 ],

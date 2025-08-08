@@ -5,7 +5,7 @@ Color primary = Color.fromARGB(255, 209, 231, 231);
 Color primaryContainer = Color.fromARGB(255, 216, 255, 255);
 Color textPrimary = Colors.black;
 Color textWhite = Colors.white;
-
+Color roundedbuttonBGC = const Color.fromARGB(221, 255, 243, 191);
 InputDecoration decorations = InputDecoration(
             focusedBorder: OutlineInputBorder(
               borderSide: BorderSide(
@@ -29,3 +29,4 @@ InputDecoration decorations = InputDecoration(
             // hoverColor: Color.fromARGB(136, 255, 0, 0)
           );
 Color navbarButtonPrimary =  Color.fromARGB(255, 124, 77, 255);
+Color dividerStroke = const Color.fromARGB(131, 122, 80, 0);

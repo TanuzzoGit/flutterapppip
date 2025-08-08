@@ -5,6 +5,7 @@ import 'package:flutter_application_1/components/textfield.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_application_1/infobox.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 class commentcard extends StatefulWidget {
   final Function updateTickets;
   final List<dynamic> comments;
@@ -28,7 +29,8 @@ Future<void> _inviaCommento() async {
   if (commentcontroller.text.isEmpty) return;
 
   final url = '${dotenv.env['PROD'] == "true" ? dotenv.env['IP_ADDR'] : dotenv.env['DEV']}/api/commenti/aggiungiCommento';
-
+  final prefs =await SharedPreferences.getInstance();
+  print(prefs.getString("utente"));
   try {
     final response = await http.put(
       Uri.parse(url),
@@ -36,11 +38,13 @@ Future<void> _inviaCommento() async {
       body: jsonEncode({
         'ticketId': widget.ticketId,
         'commento': {
-          'autore': 'NomeAutore', 
+          'autore': prefs.getString("utente"), 
           'testo': commentcontroller.text,
         }
       }),
     );
+  print(prefs.getString("utente"));
+  print(prefs.getString("utente"));
 
     if (response.statusCode == 200) {
       widget.updateTickets();
@@ -139,6 +143,7 @@ class _messageState extends State<messageScroller> {
                 autore: comment['autore'] ?? 'Anonimo',
                 testo: comment['testo'] ?? '',
                 date: comment['data'] ?? '',
+                tipo:comment['tipo']
               ),
             ),
           ],
@@ -152,7 +157,8 @@ class messageBubble extends StatefulWidget {
   final String? autore;
   final String? testo;
   final String? date;
-  const messageBubble({super.key, this.autore, this.testo, this.date});
+  final String? tipo;
+  const messageBubble({super.key, this.autore, this.testo, this.date,this.tipo});
 
   @override
   State<messageBubble> createState() => _messageBubble();
@@ -167,10 +173,10 @@ class _messageBubble extends State<messageBubble> {
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: const Color.fromARGB(62, 247, 187, 76),
+            color: widget.tipo == 'responsabile' ? const Color.fromARGB(62, 242, 95, 255) : const Color.fromARGB(62, 247, 187, 76),
             borderRadius: BorderRadius.all(Radius.circular(8)),
             border: Border.all(
-              color: const Color.fromARGB(255, 247, 187, 76),
+              color:  widget.tipo == 'responsabile' ? const Color.fromARGB(255, 231, 83, 245) : const Color.fromARGB(255, 247, 187, 76),
               width: 2,
             ),
           ),

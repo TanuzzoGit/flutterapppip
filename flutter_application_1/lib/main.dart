@@ -2,19 +2,34 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_application_1/homePage.dart';
 import 'package:flutter_application_1/insertNode.dart';
+import 'package:flutter_application_1/login.dart';
 import 'package:flutter_application_1/specific_ticket.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 // GoRouter configuration
 final ValueNotifier<bool> refreshNotifier = ValueNotifier<bool>(false);
-
 final _router = GoRouter(
   refreshListenable: refreshNotifier,
+  redirect: (context, state) async {
+    final prefs = await SharedPreferences.getInstance();
+    final isAuthenticated = prefs.getBool("auth") ?? false;
+    
+    if (!isAuthenticated && state.matchedLocation != '/login') {
+      return '/login';
+    }
+    
+    if (isAuthenticated && state.matchedLocation == '/login') {
+      return '/';
+    }
+    
+    // Altrimenti procedi normalmente
+    return null;
+  },
   routes: [
     GoRoute(
       path: '/',
-      builder: (context, state) => MyHomePage(title: 'Pizzini',key: UniqueKey(),),
+      builder: (context, state) =>  MyHomePage(title: 'Pizzini',key: UniqueKey(),),
     ),
     GoRoute(
       path: '/insert',
@@ -27,6 +42,7 @@ final _router = GoRouter(
         return SpecificTicket(ticketId: ticketId);
       },
     ),
+    GoRoute(path: '/login',builder:(context, state) => Login()) 
   ],
 );
 
@@ -34,6 +50,9 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Carica env file
+final prefs = await SharedPreferences.getInstance();
+
+if(prefs.getBool("auth") == null) prefs.setBool("auth", false);
 
   // Errori Flutter
   FlutterError.onError = (FlutterErrorDetails details) {
